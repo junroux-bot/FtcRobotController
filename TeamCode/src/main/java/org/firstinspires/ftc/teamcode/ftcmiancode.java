@@ -12,7 +12,7 @@ public class ftcmiancode extends OpMode {
     public void init() {
         telemetry.addData("hello nic");
 
-    }
+    }JUN MING LIKE mixin
 
     @Override
     public void loop() {
