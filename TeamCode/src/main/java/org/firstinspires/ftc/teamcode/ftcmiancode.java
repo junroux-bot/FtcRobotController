@@ -10,7 +10,7 @@ public class ftcmiancode extends OpMode {
 
     @Override
     public void init() {
-        telemetry.addData("hello nic")
+        telemetry.addData("hello nic");
 
     }
 
