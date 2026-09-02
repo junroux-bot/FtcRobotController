@@ -13,7 +13,7 @@ public class IMU_Setup {
 
         RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
         );
 
         imu.initialize(new IMU.Parameters(RevOrientation));
@@ -22,6 +22,10 @@ public class IMU_Setup {
 
     public double getHeading(AngleUnit angleUnit){
         return  imu.getRobotYawPitchRollAngles().getYaw(angleUnit);
+    }
+
+    public void Reset_imu(){
+        imu.resetYaw();
     }
 
 }

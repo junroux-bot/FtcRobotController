@@ -20,8 +20,8 @@ public class test extends OpMode {
 
     @Override
     public void loop() {
-        Drive.drive(gamepad1.left_stick_y,gamepad1.left_stick_x, gamepad1.right_stick_x,gamepad1);
-        telemetry.addData("distance",camera.get_DistanceFrom(camera.GetCamera_data("ta")));
+        Drive.drive(-gamepad1.left_stick_y,gamepad1.left_stick_x, gamepad1.right_stick_x);
+
 
     }
 }

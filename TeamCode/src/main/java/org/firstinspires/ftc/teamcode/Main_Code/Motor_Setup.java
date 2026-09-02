@@ -1,70 +1,60 @@
 package org.firstinspires.ftc.teamcode.Main_Code;
 
-
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class Motor_Setup {
-    private DcMotor frontLeftMotor;
-    private DcMotor backLeftMotor;
-    private DcMotor frontRightMotor;
-    private DcMotor backRightMotor;
+    private DcMotor flm, blm, frm, brm;
+    public IMU_Setup imu = new IMU_Setup();
 
-    public void init(HardwareMap hwmap, String fleft_motor, String bleft_motor, String fright_motor, String bright_motor) {
-        frontLeftMotor = hwmap.dcMotor.get(fleft_motor);
-        backLeftMotor = hwmap.dcMotor.get(bleft_motor);
-        frontRightMotor = hwmap.dcMotor.get(fright_motor);
-        backRightMotor = hwmap.dcMotor.get(bright_motor);
+    public void init(HardwareMap hwmap,String fl,String bl,String fr,String br) {
+        flm = hwmap.get(DcMotor.class, fl);
+        blm = hwmap.get(DcMotor.class, bl);
+        frm = hwmap.get(DcMotor.class, fr);
+        brm = hwmap.get(DcMotor.class, br);
 
-        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flm.setDirection(DcMotor.Direction.REVERSE);
+        blm.setDirection(DcMotor.Direction.REVERSE);
 
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        flm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        blm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        brm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        flm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        blm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        brm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        imu.intt(hwmap);
     }
 
-    private double lastLeftRumble = 0.0;
-    private double lastRightRumble = 0.0;
-    public void drive(double y, double x, double rx, Gamepad gamepad) {
-        double y_axis = -y;
-        double x_axis =x* 1.1;
-        double trun =-rx;
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double frontLeftPower = (y_axis + x_axis + trun) / denominator;
-        double backLeftPower = (y_axis - x_axis + trun) / denominator;
-        double frontRightPower = (y_axis - x_axis - trun) / denominator;
-        double backRightPower = (y_axis + x_axis - trun) / denominator;
+    public void drive(double y, double x, double rx) {
+        double flp = y + x + rx;
+        double blp = y - x + rx;
+        double frp = y - x - rx;
+        double brp = y + x - rx;
 
-        frontLeftMotor.setPower(frontLeftPower);
-        backLeftMotor.setPower(backLeftPower);
-        frontRightMotor.setPower(frontRightPower);
-        backRightMotor.setPower(backRightPower);
+        double maxp = Math.max(1.0, Math.max(Math.abs(flp), Math.max(Math.abs(blp),
+                Math.max(Math.abs(frp), Math.abs(brp)))));
 
+        flm.setPower(flp / maxp);
+        blm.setPower(blp / maxp);
+        frm.setPower(frp / maxp);
+        brm.setPower(brp / maxp);
+    }
 
-        if (gamepad != null) {
-            double leftvibration = ((Math.abs(frontLeftPower) + Math.abs(backLeftPower)) / 2.0) * 0.7;
-            double rightvibration = ((Math.abs(frontRightPower) + Math.abs(backRightPower)) / 2.0) * 0.7;
+    public void drive_field(double y, double x, double rx) {
+        double botHeading = imu.getHeading(AngleUnit.RADIANS);
 
-            if (leftvibration < 0.15) leftvibration = 0.0;
-            if (rightvibration < 0.15) rightvibration = 0.0;
+        double rotStrafe = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotForward = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
-            if (Math.abs(leftvibration - lastLeftRumble) > 0.05 || Math.abs(rightvibration - lastRightRumble) > 0.05) {
-                if (leftvibration > 0 || rightvibration > 0) {
-                    gamepad.rumble(leftvibration, rightvibration, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-                } else {
-                    gamepad.stopRumble();
-                }
-                lastLeftRumble = leftvibration;
-                lastRightRumble = rightvibration;
-            }
-        }
+        this.drive(rotForward, rotStrafe, rx);
+    }
+
+    public void Reset_heading(){
+        imu.Reset_imu();
     }
 }
-
-// Motor_control.init(hardwareMap,"fleft","bleft","fright","bright");
-
-// Motor_control.drive(gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x);
